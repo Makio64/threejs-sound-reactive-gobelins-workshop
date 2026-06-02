@@ -1,0 +1,16 @@
+{
+  "name": "webgpu-sound-reactive-gobelins-workshop",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "A live VJ host for student-authored WebGPU sound-reactive scenes. Drop a folder, it joins the infinite loop.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.184.0",
+    "vite": "^8.0.15"
+  }
+}

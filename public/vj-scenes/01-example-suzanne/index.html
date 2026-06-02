@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  Suzanne- Student Demo for WebGPU & TSL (Three Shading Language).
+  Renders a single front-facing Suzanne mesh using MeshStandardNodeMaterial.
+  Demonstrates:
+  1. Shading properties (roughness, metalness, and color) changing on beat with a percentage of chance.
+  2. Professional lighting (ACES Filmic Tone Mapping, RoomEnvironment IBL, and Warm/Cool directional lights).
+  3. Curated harmonious color palettes.
+  4. Emissive rim glow mapping (Fresnel effect) which preserves PBR metallic reflections.
+-->
+<head>
+	<meta charset="utf-8">
+	<style>
+		html, body {
+			margin: 0;
+			height: 100%;
+			background: #010102;
+			overflow: hidden;
+		}
+		canvas {
+			display: block;
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.webgpu.min.js",
+				"three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.webgpu.min.js",
+				"three/tsl": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.tsl.min.js",
+				"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
+			}
+		}
+	</script>
+</head>
+<body>
+	<script type="module" src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+.home-logo {
+	position: absolute;
+	top: clamp(20px, 6vh, 60px);
+	left: 50%;
+	transform: translateX(-50%);
+	width: clamp(55px, 10vw, 90px);
+	height: auto;
+	opacity: 0.6;
+}
+
+.home-actions {
+	position: absolute;
+	bottom: max(30px, 6vh);
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 14px;
+}
+
+.home-start {
+	appearance: none;
+	border: 1px solid rgba(255, 255, 255, .2);
+	background: transparent;
+	color: #fff;
+	padding: 14px 44px;
+	border-radius: 999px;
+	font: inherit;
+	font-weight: 400;
+	font-size: 13px;
+	letter-spacing: .25em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition: all .2s ease-out;
+}
+
+.home-start:hover {
+	border-color: rgba(255, 255, 255, .6);
+	background: rgba(255, 255, 255, .03);
+}
+
+.home-guide-btn {
+	appearance: none;
+	border: none;
+	background: transparent;
+	color: rgba(255, 255, 255, .35);
+	font: inherit;
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: .15em;
+	text-transform: uppercase;
+	cursor: pointer;
+	position: relative;
+	transition: color .2s ease-out;
+}
+
+.home-guide-btn::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -3px;
+	height: 1px;
+	background: currentColor;
+	transform: scaleX(0);
+	transform-origin: center;
+	transition: transform .2s ease-out;
+}
+
+.home-guide-btn:hover {
+	color: rgba(255, 255, 255, .8);
+}
+
+.home-guide-btn:hover::after {
+	transform: scaleX(1);
+}

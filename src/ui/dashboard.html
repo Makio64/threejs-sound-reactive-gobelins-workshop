@@ -1,0 +1,52 @@
+<div class="vj-dashboard">
+	<div class="vj-dash-header">
+		<div class="vj-dash-logo">
+			<span>CONTROL PANEL</span>
+		</div>
+	</div>
+	<div class="vj-dash-scroll">
+		<div class="vj-section">
+			<div class="vj-flex-row">
+				<span class="vj-title">PLAYBACK</span>
+				<span class="vj-badge vj-badge-paused" id="vj-play-status" style="display: none;">PAUSED</span>
+			</div>
+			<div class="vj-progress">
+				<div class="vj-progress-fill" id="vj-time-progress" style="width: 0%"></div>
+			</div>
+			<div class="vj-slider-container" style="margin-top: 14px;">
+				<div class="vj-flex-row">
+					<label>SCENE DURATION</label>
+					<span id="vj-duration-val">30s</span>
+				</div>
+				<input type="range" class="vj-slider" id="vj-slider-duration" min="5" max="60" value="30">
+			</div>
+		</div>
+
+		<div class="vj-section">
+			<span class="vj-title">AUDIO STATE</span>
+			<div class="vj-btn-group">
+				<button class="vj-btn-tab" id="vj-audio-mic">MIC</button>
+				<button class="vj-btn-tab" id="vj-audio-track">MP3</button>
+			</div>
+		</div>
+
+		<div class="vj-section">
+			<span class="vj-title">SCENES (<span id="vj-scenes-count">0</span>)</span>
+			<div class="vj-scene-list" id="vj-scene-list-container"></div>
+		</div>
+
+		<div class="vj-section" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0;">
+			<span class="vj-title">KEYBOARD SHORTCUTS</span>
+			<div class="vj-shortcuts">
+				<div><span>H</span> Toggle Dashboard</div>
+				<div><span>Space</span> Pause/Resume Auto-Advance</div>
+				<div><span>M</span> Toggle Mic vs Track</div>
+				<div><span>D</span> Toggle Audio Debug</div>
+				<div><span>&larr;</span> / <span>&rarr;</span> Prev / Next Scene</div>
+			</div>
+		</div>
+	</div>
+</div>
+<button class="vj-btn-toggle" title="Toggle Controls (H)">
+	<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+</button>

@@ -1,0 +1,11 @@
+node_modules
+dist
+.DS_Store
+*.log
+
+# Audio files are large- keep them out of git by default.
+# Want to ship the set with the repo? `git add -f public/tracks/yourtrack.mp3`.
+public/tracks/*.mp3
+
+# tracks.json is generated from the mp3s in public/tracks/ at dev/build.
+public/tracks/tracks.json

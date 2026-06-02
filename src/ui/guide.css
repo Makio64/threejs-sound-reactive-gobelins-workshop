@@ -1,0 +1,164 @@
+dialog#integration-guide {
+	background: #000000 !important;
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	border: 1px solid #222222 !important;
+	border-radius: 8px !important;
+	color: #ffffff !important;
+	padding: 40px !important;
+	max-width: 500px !important;
+	width: 90% !important;
+	max-height: calc(100dvh - 82px - 32px) !important;   /* never taller than the viewport (82px = padding + border, 32px = breathing room) */
+	overflow: hidden !important;                         /* clip to the rounded corners; .guide-content scrolls instead */
+	box-shadow: 0 30px 70px rgba(0, 0, 0, 0.95) !important;
+	position: fixed !important;
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) scale(0.95) !important;
+	margin: 0 !important;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+dialog#integration-guide[open] {
+	opacity: 1;
+	visibility: visible;
+	transform: translate(-50%, -50%) scale(1) !important;
+	display: flex !important;            /* only on [open], so the closed dialog stays display:none */
+	flex-direction: column !important;   /* close button pinned; .guide-content takes the rest and scrolls */
+}
+
+dialog#integration-guide::backdrop {
+	background: rgba(0, 0, 0, 0.85);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	opacity: 0;
+	transition: opacity 0.3s ease-out;
+}
+
+dialog#integration-guide[open]::backdrop {
+	opacity: 1;
+}
+
+@starting-style {
+	dialog#integration-guide[open] {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.95);
+	}
+	dialog#integration-guide[open]::backdrop {
+		opacity: 0;
+	}
+}
+
+.guide-content {
+	overflow-y: auto;   /* scrolls when the guide is taller than the capped dialog */
+	min-height: 0;      /* allow this flex child to shrink so the scroll can engage */
+}
+
+.guide-close-btn {
+	position: absolute;
+	top: 24px;
+	right: 24px;
+	background: transparent;
+	border: 1px solid #222222;
+	color: #666666;
+	width: 32px;
+	height: 32px;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	font-size: 16px;
+	font-weight: 300;
+	line-height: 1;
+	transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.guide-close-btn:hover {
+	color: #ffffff;
+	border-color: #444444;
+	background: rgba(255, 255, 255, 0.05);
+}
+
+.guide-title {
+	margin: 0 0 32px 0;
+	font-family: 'Outfit', sans-serif;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 0.25em;
+	color: #ffffff;
+	text-transform: uppercase;
+	border-bottom: 1px solid #1c1c1e;
+	padding-bottom: 18px;
+}
+
+.guide-section {
+	margin-bottom: 28px;
+	text-align: left;
+}
+
+.guide-section:last-of-type {
+	margin-bottom: 0;
+}
+
+.guide-section-title {
+	margin: 0 0 12px 0;
+	font-family: 'Outfit', sans-serif;
+	font-size: 10px;
+	font-weight: 700;
+	color: #888888;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.guide-section-title::before {
+	content: '';
+	display: inline-block;
+	width: 4px;
+	height: 4px;
+	background: #ffffff;
+	border-radius: 50%;
+}
+
+.guide-text {
+	margin: 0 0 12px 0;
+	font-size: 12px;
+	line-height: 1.7;
+	color: #a0a0a5;
+}
+
+.guide-code {
+	font-family: ui-monospace, Menlo, monospace;
+	font-size: 10px;
+	background: #111111;
+	padding: 3px 6px;
+	border-radius: 3px;
+	color: #ffffff;
+	border: 1px solid #222222;
+}
+
+.guide-pre {
+	margin: 16px 0;
+	background: #09090b;
+	border: 1px solid #1c1c1e;
+	border-radius: 4px;
+	padding: 14px 18px;
+	overflow-x: auto;
+}
+
+.guide-pre code {
+	background: transparent;
+	padding: 0;
+	border: none;
+	color: #ffffff;
+	font-family: ui-monospace, Menlo, monospace;
+	font-size: 11px;
+	letter-spacing: 0.02em;
+	white-space: pre;
+}

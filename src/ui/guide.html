@@ -1,0 +1,79 @@
+<form method="dialog">
+	<button class="guide-close-btn" type="submit" aria-label="Close dialog">&times;</button>
+</form>
+<div class="guide-content">
+	<h2 id="guide-title" class="guide-title">Integration Guide</h2>
+
+	<div class="guide-section">
+		<h3 class="guide-section-title">1. Getting started</h3>
+		<p class="guide-text">
+			The audio engine is dependency-free.<br />Copy <strong>two folders</strong> from this repo into your Vite project:
+		</p>
+		<div class="guide-pre">
+			<code>src/sounds/     →  your src/sounds/      · the engine
+public/tracks/  →  your public/tracks/   · music (or mic)</code>
+		</div>
+		<p class="guide-text">
+			On Vite, also copy <code class="guide-code">vite-plugin-vj-tracks.js</code> and register it &mdash; it keeps <code class="guide-code">tracks.json</code> in sync, so dropping an <code class="guide-code">.mp3</code> in <code class="guide-code">public/tracks/</code> adds it to the playlist:
+		</p>
+		<div class="guide-pre">
+			<code>import vjTracksPlugin from './vite-plugin-vj-tracks.js'
+export default defineConfig( { plugins: [ vjTracksPlugin() ] } )</code>
+		</div>
+		<p class="guide-text">
+			Import the analyzer in your code and read the signals each frame:
+		</p>
+		<div class="guide-pre">
+			<code>import Analyzer from '/sounds/Analyzer.js'
+const audio = new Analyzer()
+
+audio.onAudio( a => {
+  a.volume             // instant loudness        0..1
+  a.volumeSmooth       // loudness, smoothed       0..1
+  a.kick               // spikes on each kick      0..1
+  a.kickHard           // strong beats only        0..1
+  a.volumeByFrequency  // per-frequency loudness   Float32Array(256), 0..1
+} )</code>
+		</div>
+		<p class="guide-text">
+			Run <code class="guide-code">pnpm dev</code> and open your page. It plays the tracks (or mic), so your visuals react on their own.
+		</p>
+		<p class="guide-text">
+			Press <code class="guide-code">d</code> for a live debug overlay of every signal (spectrum + meters). Drop more <code class="guide-code">.mp3</code>s in <code class="guide-code">public/tracks/</code>, switch with <code class="guide-code">.</code> / <code class="guide-code">,</code>, and toggle the mic with <code class="guide-code">m</code>.
+		</p>
+	</div>
+
+	<div class="guide-section">
+		<h3 class="guide-section-title">2. The helper modules</h3>
+		<p class="guide-text">
+			The <code class="guide-code">Analyzer</code> lazy-loads these for you in standalone mode &mdash; reach for them only when you want manual control. All three live in <code class="guide-code">src/sounds/</code>.
+		</p>
+		<div class="guide-pre">
+			<code>// AnalyzerDebug- the draggable overlay ('d' toggles it, on by default)
+import AnalyzerDebug from '/sounds/AnalyzerDebug.js'
+new AnalyzerDebug( audio )       // .toggle() · .show() · .hide() · .dispose()
+
+// SoundPlayer- playlist + audio + keys (m · . · ,), lives at audio.player
+audio.player?.useTrack( url )    // load a track  (also .nextTrack / .prevTrack)
+audio.player?.useMic()           // switch to the microphone
+
+// PlayerControl- the "now playing" widget (name = skip · scrub · time)
+import PlayerControl from '/sounds/PlayerControl.js'
+new PlayerControl( { getAudioEl, getSource, getTrackName, onSkip, onSeek } )</code>
+		</div>
+	</div>
+
+	<div class="guide-section">
+		<h3 class="guide-section-title">3. Integrate it here</h3>
+		<p class="guide-text">
+			Add your scene as a <strong>local folder</strong> and open a <strong>pull request</strong> &mdash; no list to edit. Copy the template, rename it, and edit its <code class="guide-code">index.html</code>:
+		</p>
+		<div class="guide-pre">
+			<code>public/vj-scenes/template/  →  public/vj-scenes/your-name/
+# edit index.html, save, then open a PR</code>
+		</div>
+		<p class="guide-text">
+			Save and the dev server auto-detects the folder. Once your PR is merged it joins the loop: the host loads it in an iframe and the same <code class="guide-code">Analyzer</code> auto-switches to <strong>receive</strong> mode &mdash; it reads the show's live audio instead of its own. Nothing in your code changes.
+		</p>
+	</div>
+</div>
