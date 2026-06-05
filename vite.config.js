@@ -93,6 +93,9 @@ function vjScenesPlugin() {
 
 export default defineConfig( {
 	plugins: [ vjScenesPlugin(), vjTracksPlugin(), vjSoundsPlugin() ],
+	// Student scenes in public/vj-scenes/ resolve deps via their own importmaps (CDN).
+	// Limit pre-bundling to the host entry so Vite doesn't try to resolve gsap, lil-gui, etc.
+	optimizeDeps: { entries: [ 'index.html' ] },
 	server: { host: true, open: false },
 	build: { target: 'es2022', outDir: 'dist' },
 	assetsInclude: [ '**/*.mp3' ],
