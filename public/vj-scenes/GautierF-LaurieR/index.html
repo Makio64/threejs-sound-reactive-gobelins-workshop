@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  COPY THIS FOLDER → public/vj-scenes/<your-name>/ and edit the script below.
+  Any tech works; this example uses three.js (WebGL) from a CDN.
+
+  Implement the lifecycle (all optional): load → warmup → play / stop.
+  Read the audio from `audio`: volume · volumeSmooth · kick · volumeByFrequency.
+
+  Independent: open this page on its own and it runs standalone (plays the same
+  audio tracks and keyboard shortcuts). Embedded in the VJ host, the same code
+  receives the master's broadcast instead- auto-detected, nothing to change.
+-->
+<head>
+	<meta charset="utf-8">
+	<link rel="preload" href="models/perso.glb" as="fetch" crossorigin>
+	<link rel="preload" href="models/ileflotante.glb" as="fetch" crossorigin>
+	<link rel="preload" href="models/status.glb" as="fetch" crossorigin>
+	<link rel="preload" href="models/poutre.glb" as="fetch" crossorigin>
+	<link rel="preload" href="models/stone.glb" as="fetch" crossorigin>
+	<link rel="preload" href="models/bigstone.glb" as="fetch" crossorigin>
+	<link rel="preload" href="models/frontstone.glb" as="fetch" crossorigin>
+	<link rel="preload" href="draco/draco_decoder.js" as="script">
+	<style>html, body { margin: 0; height: 100%; background: #000; overflow: hidden; } canvas { display: block; }</style>
+	<script type="importmap">
+	{
+		"imports": {
+			"three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js",
+			"three/examples/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/",
+			"lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.20.0/+esm"
+		}
+	}
+	</script>
+</head>
+<body>
+	<script type="module" src="main.js"></script>
+</body>
+</html>
