@@ -1,0 +1,1794 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>heart</title>
+    <style>
+      @import url("https://fonts.cdnfonts.com/css/thegoodmonolith");
+
+      :root {
+        --bg: #061014;
+        --beat: 0.428s;
+        --glow-rgb: 178, 203, 230;
+        --glow-soft-rgb: 224, 238, 255;
+        --panel: rgba(5, 18, 23, 0.76);
+        --panel-strong: rgba(3, 11, 15, 0.92);
+        --panel-soft: rgba(var(--glow-rgb), 0.1);
+        --line: rgba(var(--glow-rgb), 0.34);
+        --line-strong: #b2cbe6;
+        --line-soft: rgba(var(--glow-soft-rgb), 0.32);
+        --text: #eaf6ff;
+        --muted: #9db7c8;
+        --dim: rgba(234, 246, 255, 0.48);
+        --shadow: rgba(var(--glow-rgb), 0.18);
+        --green: #94f0b3;
+        --error: #ff5b68;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        min-height: 100vh;
+        overflow: hidden;
+        background: #02080c;
+        color: var(--text);
+        font-family: "TheGoodMonolith", "Courier New", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .canvas-guide {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        background: url("faux-canvas-guide.mov.png") center / cover no-repeat;
+        opacity: 0.72;
+        filter: saturate(0.92) contrast(1.06) brightness(0.78);
+        pointer-events: none;
+      }
+
+      .scene {
+        position: relative;
+        z-index: 1;
+        width: 100vw;
+        height: 100vh;
+        isolation: isolate;
+        pointer-events: none;
+      }
+
+      .scene::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        background-image:
+          linear-gradient(
+            to right,
+            rgba(255, 240, 230, 0.06) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(255, 240, 230, 0.06) 1px,
+            transparent 1px
+          );
+        background-size: 40px 40px;
+        animation: gridDrift calc(var(--beat) * 16) linear infinite;
+      }
+
+      .scene::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.03) 0,
+          rgba(255, 255, 255, 0.03) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+        mix-blend-mode: screen;
+        opacity: 0.45;
+        animation: scanNoise calc(var(--beat) * 8) steps(7) infinite;
+      }
+
+      .topbar {
+        position: absolute;
+        top: 1.25rem;
+        left: 1.25rem;
+        right: 1.25rem;
+        z-index: 20;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: start;
+        color: var(--muted);
+        font-size: clamp(0.62rem, 1vw, 0.78rem);
+        animation:
+          hudFade calc(var(--beat) * 1.4) ease-out both,
+          textGlint calc(var(--beat) * 12) ease-in-out 0.8s infinite;
+      }
+
+      .topbar span:nth-child(2) {
+        text-align: center;
+      }
+
+      .topbar span:last-child {
+        text-align: right;
+      }
+
+      .panel {
+        position: absolute;
+        z-index: 15;
+        pointer-events: auto;
+        width: min(22rem, calc(100vw - 2rem));
+        padding: 0.9rem;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        box-shadow: 0 0 24px rgba(0, 0, 0, 0.24);
+        backdrop-filter: blur(10px);
+        animation:
+          panelBoot calc(var(--beat) * 1.2) cubic-bezier(0.2, 0.8, 0.25, 1) both,
+          panelBreath calc(var(--beat) * 8) ease-in-out infinite;
+        animation-delay:
+          var(--boot-delay, 0s), calc(var(--boot-delay, 0s) + 0.9s);
+      }
+
+      .metrics-left {
+        --boot-delay: 0.05s;
+      }
+
+      .metrics-right {
+        --boot-delay: 0.12s;
+      }
+
+      .center-strip {
+        --boot-delay: 0.18s;
+      }
+
+      .controls {
+        --boot-delay: 0.24s;
+      }
+
+      .bio-rail {
+        display: none;
+        --boot-delay: 0.32s;
+      }
+
+      .terminal {
+        --boot-delay: 0.4s;
+      }
+
+      .spectrum {
+        transform: scale(0.8);
+        --boot-delay: 0.48s;
+      }
+
+      .panel-title,
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.7rem;
+        color: var(--text);
+        font-size: 0.82rem;
+      }
+
+      .panel-title .status {
+        color: var(--line-strong);
+        animation: statusPulse calc(var(--beat) * 2) ease-in-out infinite;
+      }
+
+      .metrics-left {
+        top: 5rem;
+        left: 1.25rem;
+      }
+
+      .metrics-right {
+        top: 5rem;
+        right: 1.25rem;
+      }
+
+      .controls {
+        top: 17.1rem;
+        left: 1.25rem;
+      }
+
+      .terminal {
+        right: 1.25rem;
+        bottom: 1.25rem;
+        width: min(31rem, calc(100vw - 2rem));
+      }
+
+      .center-strip {
+        display: none;
+        top: 5rem;
+        left: 50%;
+        width: min(28rem, calc(100vw - 2rem));
+        transform: translateX(-50%);
+      }
+
+      .bio-rail {
+        top: 20.9rem;
+        right: 1.25rem;
+      }
+
+      .spectrum {
+        left: 1.25rem;
+        bottom: 1.25rem;
+        width: min(36rem, calc(100vw - 2rem));
+      }
+
+      .bar {
+        height: 0.5rem;
+        margin-bottom: 0.9rem;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .bar-fill {
+        width: var(--value, 75%);
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          var(--line-strong),
+          rgba(var(--glow-soft-rgb), 0.85)
+        );
+        box-shadow: 0 0 12px var(--shadow);
+        transform-origin: left center;
+        animation:
+          fillWake calc(var(--beat) * 1.6) ease-out both,
+          fillBreath calc(var(--beat) * 6) ease-in-out 0.7s infinite;
+      }
+
+      .metrics-left .bar-fill {
+        animation: metricBarLive calc(var(--beat) * 6) ease-in-out infinite;
+      }
+
+      .readouts {
+        display: grid;
+        gap: 0.38rem;
+        font-size: 0.76rem;
+      }
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .label {
+        color: var(--muted);
+      }
+
+      .value {
+        color: var(--text);
+      }
+
+      .metric-value,
+      .control-value {
+        display: inline-block;
+        min-width: var(--value-width, 4.6ch);
+        color: var(--text);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        animation: valueGlow calc(var(--beat) * 4) ease-in-out infinite;
+      }
+
+      .metric-value::before,
+      .control-value::before {
+        content: var(--v1);
+        animation: valueCycle var(--value-speed, calc(var(--beat) * 8))
+          steps(1, end) infinite;
+      }
+
+      .metric-value.integrity {
+        --v1: "87%";
+        --v2: "88%";
+        --v3: "86%";
+        --v4: "87%";
+        --value-speed: calc(var(--beat) * 6);
+      }
+
+      .metric-value.pairs {
+        --v1: "3.28e6";
+        --v2: "3.31e6";
+        --v3: "3.29e6";
+        --v4: "3.33e6";
+        --value-width: 6.5ch;
+        --value-speed: calc(var(--beat) * 8);
+      }
+
+      .metric-value.gc {
+        --v1: "41.7%";
+        --v2: "42.1%";
+        --v3: "41.9%";
+        --v4: "41.6%";
+        --value-width: 5.4ch;
+        --value-speed: calc(var(--beat) * 7);
+      }
+
+      .metric-value.drift {
+        --v1: "0.0042";
+        --v2: "0.0048";
+        --v3: "0.0039";
+        --v4: "0.0044";
+        --value-width: 6.5ch;
+        --value-speed: calc(var(--beat) * 9);
+      }
+
+      .control-value.rotation {
+        --v1: "1.0";
+        --v2: "1.1";
+        --v3: "0.9";
+        --v4: "1.0";
+        --value-width: 3.5ch;
+        --value-speed: calc(var(--beat) * 5);
+      }
+
+      .control-value.depth {
+        --v1: "64";
+        --v2: "68";
+        --v3: "62";
+        --v4: "66";
+        --value-width: 3ch;
+        --value-speed: calc(var(--beat) * 6);
+      }
+
+      .control-value.contrast {
+        --v1: "1.4";
+        --v2: "1.6";
+        --v3: "1.3";
+        --v4: "1.5";
+        --value-width: 3.5ch;
+        --value-speed: calc(var(--beat) * 6);
+      }
+
+      .control-value.filter {
+        --v1: "0.12";
+        --v2: "0.16";
+        --v3: "0.09";
+        --v4: "0.14";
+        --value-width: 4.4ch;
+        --value-speed: calc(var(--beat) * 7);
+      }
+
+      .waveform {
+        position: relative;
+        height: 2.7rem;
+        margin-bottom: 0.45rem;
+        overflow: hidden;
+        border: 1px solid rgba(var(--glow-rgb), 0.2);
+        background:
+          linear-gradient(
+            to right,
+            rgba(var(--glow-rgb), 0.08) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(var(--glow-rgb), 0.08) 1px,
+            transparent 1px
+          );
+        background-size: 16px 16px;
+      }
+
+      .waveform svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .waveform path {
+        fill: none;
+        stroke: var(--wave-color, var(--line-strong));
+        stroke-width: 2;
+        filter: drop-shadow(
+          0 0 6px var(--wave-shadow, rgba(var(--glow-rgb), 0.8))
+        );
+        stroke-dasharray: 24 12;
+        animation:
+          waveTravel var(--wave-speed, calc(var(--beat) * 4)) linear infinite,
+          waveFloat calc(var(--beat) * 3) ease-in-out infinite;
+      }
+
+      .waveform.cyan {
+        --wave-color: #b2cbe6;
+        --wave-shadow: rgba(178, 203, 230, 0.8);
+        --wave-speed: calc(var(--beat) * 4);
+      }
+
+      .waveform.amber {
+        --wave-color: #e6a15d;
+        --wave-shadow: rgba(230, 161, 93, 0.72);
+        --wave-speed: calc(var(--beat) * 5);
+      }
+
+      .waveform.green {
+        --wave-color: #94f0b3;
+        --wave-shadow: rgba(148, 240, 179, 0.68);
+        --wave-speed: calc(var(--beat) * 6);
+      }
+
+      .control-group {
+        margin: 0 0 0.86rem;
+      }
+
+      .control-row,
+      .sample-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.35rem;
+        color: var(--muted);
+        font-size: 0.72rem;
+      }
+
+      .slider {
+        position: relative;
+        height: 0.44rem;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .slider::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: var(--fill, 45%);
+        background: var(--line-strong);
+        transform-origin: left center;
+        animation:
+          sliderRead calc(var(--beat) * 3) ease-in-out infinite,
+          sliderRange var(--slider-speed, calc(var(--beat) * 5)) ease-in-out
+            infinite;
+      }
+
+      .slider::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: var(--fill, 45%);
+        width: 0.8rem;
+        height: 0.8rem;
+        border: 1px solid var(--text);
+        background: var(--bg);
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 9px rgba(var(--glow-rgb), 0.55);
+        animation:
+          knobPulse calc(var(--beat) * 2) ease-in-out infinite,
+          knobRange var(--slider-speed, calc(var(--beat) * 5)) ease-in-out
+            infinite;
+      }
+
+      .controls .control-group:nth-child(2) {
+        --slider-speed: calc(var(--beat) * 5);
+      }
+
+      .controls .control-group:nth-child(3) {
+        --slider-speed: calc(var(--beat) * 6);
+      }
+
+      .controls .control-group:nth-child(4) {
+        --slider-speed: calc(var(--beat) * 5);
+      }
+
+      .controls .control-group:nth-child(5) {
+        --slider-speed: calc(var(--beat) * 7);
+      }
+
+      .buttons,
+      .tracks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+
+      .btn {
+        min-height: 2rem;
+        padding: 0.35rem 0.8rem;
+        border: 1px solid var(--line);
+        background: var(--panel-soft);
+        color: var(--text);
+        text-transform: uppercase;
+      }
+
+      .terminal-lines {
+        --terminal-step: 1.28rem;
+        color: var(--muted);
+        font-size: 0.72rem;
+        line-height: 1.35;
+        height: calc(var(--terminal-step) * 5);
+        overflow: hidden;
+      }
+
+      .terminal-feed {
+        display: grid;
+        gap: 0.32rem;
+        animation: terminalScroll calc(var(--beat) * 32) linear infinite;
+      }
+
+      .code-line {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        height: 0.95rem;
+        overflow: hidden;
+        white-space: nowrap;
+        opacity: 0.68;
+        color: var(--muted);
+      }
+
+      .code-line .code-text {
+        display: inline-block;
+        width: 0;
+        max-width: min(var(--chars, 48ch), 100%);
+        overflow: hidden;
+        vertical-align: top;
+        animation: typeCode calc(var(--beat) * 32) steps(var(--steps, 48), end)
+          infinite;
+        animation-delay: var(--type-delay, 0s);
+      }
+
+      .code-line::before {
+        content: ">";
+        display: inline-block;
+        width: 1.2ch;
+        margin-right: 0.45ch;
+        color: rgba(var(--glow-rgb), 0.72);
+        animation: promptBlink calc(var(--beat) * 2) steps(2, end) infinite;
+      }
+
+      .code-line.command {
+        color: var(--line-strong);
+      }
+
+      .code-line.ok {
+        color: var(--green);
+      }
+
+      .code-line.error {
+        color: var(--error);
+        text-shadow: 0 0 8px rgba(255, 91, 104, 0.7);
+        animation: errorFlash calc(var(--beat) * 1.5) steps(2, end) infinite;
+      }
+
+      .code-line.prompt {
+        color: var(--green);
+      }
+
+      .code-line.prompt::after {
+        content: "_";
+        display: inline-block;
+        margin-left: 0.2ch;
+        animation: promptBlink calc(var(--beat) * 2) steps(2, end) infinite;
+      }
+
+      .spectrum-content {
+        height: 9.6rem;
+        padding: 0.7rem;
+        border: 1px solid rgba(var(--glow-rgb), 0.22);
+        background:
+          linear-gradient(
+            to right,
+            rgba(var(--glow-rgb), 0.07) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(var(--glow-rgb), 0.07) 1px,
+            transparent 1px
+          );
+        background-size: 18px 18px;
+      }
+
+      .hud-grid {
+        display: grid;
+        gap: 0.55rem;
+      }
+
+      .telemetry-grid {
+        grid-template-columns: 1.1fr 1fr;
+        align-items: stretch;
+      }
+
+      .radar {
+        --sweep-angle: 18deg;
+        position: relative;
+        aspect-ratio: 1;
+        min-height: 7.5rem;
+        border: 1px solid rgba(var(--glow-rgb), 0.28);
+        border-radius: 999px;
+        background:
+          radial-gradient(
+            circle,
+            rgba(var(--glow-rgb), 0.2) 0 2px,
+            transparent 3px
+          ),
+          repeating-radial-gradient(
+            circle,
+            transparent 0 1.35rem,
+            rgba(var(--glow-rgb), 0.18) 1.4rem 1.45rem
+          ),
+          conic-gradient(
+            from var(--sweep-angle),
+            rgba(var(--glow-rgb), 0.34),
+            transparent 32%,
+            transparent
+          );
+        box-shadow:
+          inset 0 0 24px rgba(var(--glow-rgb), 0.08),
+          0 0 16px var(--shadow);
+        animation:
+          radarSweep calc(var(--beat) * 8) linear infinite,
+          radarBreath calc(var(--beat) * 4) ease-in-out infinite;
+      }
+
+      .radar::before,
+      .radar::after {
+        content: "";
+        position: absolute;
+        inset: 50% 8%;
+        height: 1px;
+        background: rgba(var(--glow-rgb), 0.35);
+      }
+
+      .radar::after {
+        transform: rotate(90deg);
+      }
+
+      .radar-dot {
+        position: absolute;
+        width: 0.36rem;
+        height: 0.36rem;
+        border-radius: 999px;
+        background: var(--line-strong);
+        box-shadow: 0 0 10px rgba(var(--glow-rgb), 0.9);
+        animation: blip calc(var(--beat) * 3) ease-in-out infinite;
+      }
+
+      .radar-dot.hot {
+        background: #e6a15d;
+        box-shadow: 0 0 10px rgba(230, 161, 93, 0.85);
+      }
+
+      .rd1 {
+        top: 26%;
+        left: 58%;
+        animation-delay: 0.2s;
+      }
+
+      .rd2 {
+        top: 61%;
+        left: 31%;
+        animation-delay: 0.9s;
+      }
+
+      .rd3 {
+        top: 42%;
+        left: 74%;
+        animation-delay: 1.45s;
+      }
+
+      .hud-bars {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        align-items: end;
+        gap: 0.22rem;
+        min-height: 4.1rem;
+        padding: 0.35rem;
+        border: 1px solid rgba(var(--glow-rgb), 0.2);
+        background: rgba(var(--glow-rgb), 0.04);
+      }
+
+      .hud-bars span {
+        height: var(--h);
+        min-height: 0.3rem;
+        background: linear-gradient(
+          180deg,
+          rgba(var(--glow-soft-rgb), 0.9),
+          rgba(var(--glow-rgb), 0.36)
+        );
+        box-shadow: 0 0 8px rgba(var(--glow-rgb), 0.4);
+        transform-origin: bottom center;
+        animation: barDance calc(var(--beat) * 2) ease-in-out infinite;
+        animation-delay: calc(var(--i, 0) * -0.17s);
+      }
+
+      .hud-bars span:nth-child(1) {
+        --i: 1;
+      }
+
+      .hud-bars span:nth-child(2) {
+        --i: 2;
+      }
+
+      .hud-bars span:nth-child(3) {
+        --i: 3;
+      }
+
+      .hud-bars span:nth-child(4) {
+        --i: 4;
+      }
+
+      .hud-bars span:nth-child(5) {
+        --i: 5;
+      }
+
+      .hud-bars span:nth-child(6) {
+        --i: 6;
+      }
+
+      .hud-bars span:nth-child(7) {
+        --i: 7;
+      }
+
+      .hud-bars span:nth-child(8) {
+        --i: 8;
+      }
+
+      .hud-bars span:nth-child(9) {
+        --i: 9;
+      }
+
+      .hud-bars span:nth-child(10) {
+        --i: 10;
+      }
+
+      .hud-bars span:nth-child(11) {
+        --i: 11;
+      }
+
+      .hud-bars span:nth-child(12) {
+        --i: 12;
+      }
+
+      .matrix {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 0.18rem;
+      }
+
+      .matrix span {
+        aspect-ratio: 1;
+        border: 1px solid rgba(var(--glow-rgb), 0.16);
+        background: rgba(var(--glow-rgb), var(--a, 0.06));
+        animation: cellPulse calc(var(--beat) * 4) ease-in-out infinite;
+        animation-delay: calc(var(--cell, 0) * -0.11s);
+      }
+
+      .telemetry-lines {
+        display: grid;
+        gap: 0.32rem;
+        font-size: 0.66rem;
+        color: var(--muted);
+      }
+
+      .thin-bars {
+        display: grid;
+        gap: 0.34rem;
+      }
+
+      .thin-bar {
+        height: 0.32rem;
+        border: 1px solid rgba(var(--glow-rgb), 0.18);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .thin-bar span {
+        display: block;
+        width: var(--w);
+        height: 100%;
+        background: var(--c, var(--line-strong));
+        box-shadow: 0 0 8px currentColor;
+        transform-origin: left center;
+        animation: thinBarRead calc(var(--beat) * 3) ease-in-out infinite;
+      }
+
+      .scan-strip {
+        display: grid;
+        grid-template-columns: repeat(18, 1fr);
+        gap: 0.22rem;
+      }
+
+      .scan-strip span {
+        height: 1.8rem;
+        border: 1px solid rgba(var(--glow-rgb), 0.16);
+        background:
+          linear-gradient(
+            to bottom,
+            rgba(var(--glow-rgb), var(--a, 0.08)),
+            transparent
+          ),
+          linear-gradient(
+            to right,
+            transparent 45%,
+            rgba(var(--glow-rgb), 0.28) 50%,
+            transparent 55%
+          );
+        animation: bandScan calc(var(--beat) * 3) ease-in-out infinite;
+        animation-delay: calc(var(--band, 0) * -0.12s);
+      }
+
+      .bio-rail .matrix {
+        margin-bottom: 0.65rem;
+      }
+
+      .scan-strip span:nth-child(1) {
+        --band: 1;
+      }
+
+      .scan-strip span:nth-child(2) {
+        --band: 2;
+      }
+
+      .scan-strip span:nth-child(3) {
+        --band: 3;
+      }
+
+      .scan-strip span:nth-child(4) {
+        --band: 4;
+      }
+
+      .scan-strip span:nth-child(5) {
+        --band: 5;
+      }
+
+      .scan-strip span:nth-child(6) {
+        --band: 6;
+      }
+
+      .scan-strip span:nth-child(7) {
+        --band: 7;
+      }
+
+      .scan-strip span:nth-child(8) {
+        --band: 8;
+      }
+
+      .scan-strip span:nth-child(9) {
+        --band: 9;
+      }
+
+      .scan-strip span:nth-child(10) {
+        --band: 10;
+      }
+
+      .scan-strip span:nth-child(11) {
+        --band: 11;
+      }
+
+      .scan-strip span:nth-child(12) {
+        --band: 12;
+      }
+
+      .scan-strip span:nth-child(13) {
+        --band: 13;
+      }
+
+      .scan-strip span:nth-child(14) {
+        --band: 14;
+      }
+
+      .scan-strip span:nth-child(15) {
+        --band: 15;
+      }
+
+      .scan-strip span:nth-child(16) {
+        --band: 16;
+      }
+
+      .scan-strip span:nth-child(17) {
+        --band: 17;
+      }
+
+      .scan-strip span:nth-child(18) {
+        --band: 18;
+      }
+
+      .matrix span:nth-child(4n + 1) {
+        --cell: 1;
+      }
+
+      .matrix span:nth-child(4n + 2) {
+        --cell: 5;
+      }
+
+      .matrix span:nth-child(4n + 3) {
+        --cell: 9;
+      }
+
+      .matrix span:nth-child(4n) {
+        --cell: 13;
+      }
+
+      @property --sweep-angle {
+        syntax: "<angle>";
+        inherits: false;
+        initial-value: 18deg;
+      }
+
+      @keyframes hudFade {
+        from {
+          opacity: 0;
+          filter: blur(4px);
+        }
+        to {
+          opacity: 1;
+          filter: blur(0);
+        }
+      }
+
+      @keyframes panelBoot {
+        from {
+          opacity: 0;
+          clip-path: inset(0 100% 0 0);
+          filter: blur(3px);
+        }
+        62% {
+          opacity: 1;
+          clip-path: inset(0 0 0 0);
+        }
+        to {
+          opacity: 1;
+          clip-path: inset(0 0 0 0);
+          filter: blur(0);
+        }
+      }
+
+      @keyframes panelBreath {
+        0%,
+        100% {
+          border-color: rgba(var(--glow-rgb), 0.28);
+          box-shadow: 0 0 22px rgba(0, 0, 0, 0.22);
+        }
+        50% {
+          border-color: rgba(var(--glow-rgb), 0.48);
+          box-shadow: 0 0 24px rgba(var(--glow-rgb), 0.08);
+        }
+      }
+
+      @keyframes gridDrift {
+        to {
+          background-position: 40px 40px;
+        }
+      }
+
+      @keyframes scanNoise {
+        0%,
+        100% {
+          opacity: 0.34;
+          transform: translateY(0);
+        }
+        45% {
+          opacity: 0.48;
+        }
+        60% {
+          transform: translateY(2px);
+        }
+      }
+
+      @keyframes textGlint {
+        0%,
+        92%,
+        100% {
+          opacity: 0.72;
+          text-shadow: none;
+        }
+        94% {
+          opacity: 1;
+          text-shadow: 0 0 9px rgba(var(--glow-rgb), 0.55);
+        }
+      }
+
+      @keyframes statusPulse {
+        0%,
+        100% {
+          opacity: 0.45;
+          text-shadow: 0 0 2px rgba(var(--glow-rgb), 0.2);
+        }
+        50% {
+          opacity: 1;
+          text-shadow: 0 0 10px rgba(var(--glow-rgb), 0.8);
+        }
+      }
+
+      @keyframes fillWake {
+        from {
+          transform: scaleX(0.08);
+          opacity: 0.35;
+        }
+        to {
+          transform: scaleX(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes fillBreath {
+        0%,
+        100% {
+          filter: brightness(0.92);
+        }
+        50% {
+          filter: brightness(1.18);
+        }
+      }
+
+      @keyframes metricBarLive {
+        0%,
+        100% {
+          transform: scaleX(0.94);
+          filter: brightness(0.92);
+        }
+        34% {
+          transform: scaleX(1);
+          filter: brightness(1.18);
+        }
+        68% {
+          transform: scaleX(0.965);
+          filter: brightness(1.02);
+        }
+      }
+
+      @keyframes valueCycle {
+        0%,
+        23% {
+          content: var(--v1);
+        }
+        24%,
+        48% {
+          content: var(--v2);
+        }
+        49%,
+        73% {
+          content: var(--v3);
+        }
+        74%,
+        100% {
+          content: var(--v4);
+        }
+      }
+
+      @keyframes valueGlow {
+        0%,
+        100% {
+          opacity: 0.78;
+          text-shadow: none;
+        }
+        48% {
+          opacity: 1;
+          text-shadow: 0 0 8px rgba(var(--glow-rgb), 0.55);
+        }
+      }
+
+      @keyframes waveTravel {
+        to {
+          stroke-dashoffset: -72;
+        }
+      }
+
+      @keyframes waveFloat {
+        0%,
+        100% {
+          transform: translateY(0) scaleY(1);
+          opacity: 0.8;
+        }
+        50% {
+          transform: translateY(-2px) scaleY(1.08);
+          opacity: 1;
+        }
+      }
+
+      @keyframes sliderRead {
+        0%,
+        100% {
+          filter: brightness(0.85);
+        }
+        50% {
+          filter: brightness(1.24);
+        }
+      }
+
+      @keyframes sliderRange {
+        0%,
+        100% {
+          transform: scaleX(0.92);
+        }
+        42% {
+          transform: scaleX(1.08);
+        }
+        68% {
+          transform: scaleX(0.98);
+        }
+      }
+
+      @keyframes knobPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 7px rgba(var(--glow-rgb), 0.45);
+        }
+        50% {
+          box-shadow: 0 0 13px rgba(var(--glow-rgb), 0.82);
+        }
+      }
+
+      @keyframes knobRange {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) translateX(-0.42rem);
+        }
+        42% {
+          transform: translate(-50%, -50%) translateX(0.48rem);
+        }
+        68% {
+          transform: translate(-50%, -50%) translateX(0.08rem);
+        }
+      }
+
+      @keyframes promptBlink {
+        50% {
+          opacity: 0.36;
+        }
+      }
+
+      @keyframes typeCode {
+        0%,
+        4% {
+          width: 0;
+        }
+        10%,
+        100% {
+          width: min(var(--chars, 48ch), 100%);
+        }
+      }
+
+      @keyframes errorFlash {
+        50% {
+          filter: brightness(1.45);
+        }
+      }
+
+      @keyframes terminalScroll {
+        0%,
+        22% {
+          transform: translateY(0);
+        }
+        26%,
+        33% {
+          transform: translateY(calc(var(--terminal-step) * -1));
+        }
+        37%,
+        44% {
+          transform: translateY(calc(var(--terminal-step) * -2));
+        }
+        48%,
+        55% {
+          transform: translateY(calc(var(--terminal-step) * -3));
+        }
+        59%,
+        66% {
+          transform: translateY(calc(var(--terminal-step) * -4));
+        }
+        70%,
+        77% {
+          transform: translateY(calc(var(--terminal-step) * -5));
+        }
+        81%,
+        88% {
+          transform: translateY(calc(var(--terminal-step) * -6));
+        }
+        92%,
+        100% {
+          transform: translateY(calc(var(--terminal-step) * -7));
+        }
+      }
+
+      @keyframes radarSweep {
+        to {
+          --sweep-angle: 378deg;
+        }
+      }
+
+      @keyframes radarBreath {
+        0%,
+        100% {
+          filter: brightness(0.92);
+        }
+        50% {
+          filter: brightness(1.15);
+        }
+      }
+
+      @keyframes blip {
+        0%,
+        100% {
+          transform: scale(0.82);
+          opacity: 0.54;
+        }
+        45% {
+          transform: scale(1.28);
+          opacity: 1;
+        }
+        70% {
+          transform: scale(0.95);
+          opacity: 0.75;
+        }
+      }
+
+      @keyframes barDance {
+        0%,
+        100% {
+          transform: scaleY(0.82);
+          opacity: 0.7;
+        }
+        45% {
+          transform: scaleY(1.12);
+          opacity: 1;
+        }
+        70% {
+          transform: scaleY(0.94);
+        }
+      }
+
+      @keyframes cellPulse {
+        0%,
+        100% {
+          opacity: 0.58;
+          filter: brightness(0.9);
+        }
+        50% {
+          opacity: 1;
+          filter: brightness(1.35);
+        }
+      }
+
+      @keyframes thinBarRead {
+        0%,
+        100% {
+          transform: scaleX(0.92);
+        }
+        50% {
+          transform: scaleX(1);
+        }
+      }
+
+      @keyframes bandScan {
+        0%,
+        100% {
+          opacity: 0.48;
+          transform: scaleY(0.82);
+        }
+        42% {
+          opacity: 1;
+          transform: scaleY(1);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+        }
+      }
+
+      .sample-controls {
+        display: grid;
+        gap: 0.7rem;
+        margin-top: 0.75rem;
+      }
+
+      .tracks-label,
+      .file-label {
+        color: var(--muted);
+        font-size: 0.72rem;
+      }
+
+      .file-label {
+        color: var(--dim);
+      }
+
+      @media (max-width: 980px) {
+        body {
+          overflow: auto;
+        }
+
+        .scene {
+          min-height: 100vh;
+          height: auto;
+          display: grid;
+          gap: 1rem;
+          padding: 5rem 1rem 1rem;
+        }
+
+        .topbar,
+        .panel {
+          position: relative;
+          inset: auto;
+          transform: none;
+          width: 100%;
+        }
+
+        .topbar {
+          position: absolute;
+          top: 1rem;
+          left: 1rem;
+          right: 1rem;
+        }
+
+        .metrics-left,
+        .metrics-right,
+        .controls,
+        .center-strip,
+        .bio-rail,
+        .terminal,
+        .spectrum {
+          top: auto;
+          right: auto;
+          bottom: auto;
+          left: auto;
+        }
+      }
+
+      @media (max-height: 820px) and (min-width: 981px) {
+        .panel {
+          padding: 0.72rem;
+        }
+
+        .metrics-left,
+        .metrics-right {
+          top: 4.55rem;
+        }
+
+        .center-strip {
+          top: 4.55rem;
+          width: min(25rem, calc(100vw - 49rem));
+        }
+
+        .bio-rail {
+          top: 20.7rem;
+          width: 17.4rem;
+        }
+
+        .bio-rail .matrix span {
+          aspect-ratio: 1.65;
+        }
+
+        .controls {
+          top: auto;
+          bottom: 1.25rem;
+          width: 17.4rem;
+        }
+
+        .spectrum {
+          left: 20rem;
+          width: min(27rem, calc(100vw - 43rem));
+        }
+
+        .spectrum-content {
+          height: 6.6rem;
+        }
+
+        .sample-controls {
+          gap: 0.48rem;
+          margin-top: 0.55rem;
+        }
+
+        .control-group {
+          margin-bottom: 0.62rem;
+        }
+
+        .terminal {
+          width: min(31rem, calc(100vw - 51rem));
+        }
+      }
+
+      main {
+        position: fixed !important;
+        top: 0;
+        z-index: 10 !important;
+      }
+
+      @media (max-width: 560px) {
+        .topbar {
+          grid-template-columns: 1fr;
+          gap: 0.35rem;
+        }
+
+        .topbar span,
+        .topbar span:nth-child(2),
+        .topbar span:last-child {
+          text-align: left;
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="assets/index-D9VYtKxy.js"></script>
+    <link rel="stylesheet" crossorigin href="assets/index-zNj1iEPQ.css" />
+  </head>
+  <body>
+    <canvas id="canvas-3d"></canvas>
+    <main class="scene" data-ui="hud-interface" data-mode="static-2d">
+      <header class="topbar" data-3d-layer="hud-top">
+        <span></span>
+        <span
+          >GENOMIC CARTOGRAPHY / MOLECULAR HUD<br />DNA-SEQUENCE MODEL
+          V2.04</span
+        >
+        <span>SCAN: 19:34:08</span>
+      </header>
+      <section
+        class="panel metrics-left"
+        data-3d-object="panel"
+        data-3d-anchor="top-left"
+      >
+        <div class="panel-title">
+          <span>DNA Analysis</span>
+          <span class="status">●</span>
+        </div>
+        <div class="bar" aria-hidden="true">
+          <div class="bar-fill" style="--value: 87%"></div>
+        </div>
+        <div class="readouts">
+          <div class="row">
+            <span class="label">Helix Integrity:</span
+            ><span
+              class="metric-value integrity"
+              aria-label="87 percent"
+            ></span>
+          </div>
+          <div class="row">
+            <span class="label">Base Pair Count:</span
+            ><span class="metric-value pairs" aria-label="3.28 million"></span>
+          </div>
+          <div class="row">
+            <span class="label">GC Concentration:</span
+            ><span class="metric-value gc" aria-label="41.7 percent"></span>
+          </div>
+          <div class="row">
+            <span class="label">Mutation Drift:</span
+            ><span class="metric-value drift" aria-label="0.0042"></span>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="panel metrics-right"
+        data-3d-object="panel"
+        data-3d-anchor="top-right"
+      >
+        <div class="panel-title">Signal Profile</div>
+        <div class="waveform cyan" aria-hidden="true">
+          <svg viewBox="0 0 360 100" preserveAspectRatio="none">
+            <path
+              d="M0 54 C18 20 35 90 54 48 S92 22 112 56 150 82 171 46 207 23 229 53 265 85 286 44 325 24 360 58"
+            ></path>
+          </svg>
+        </div>
+        <div class="waveform amber" aria-hidden="true">
+          <svg viewBox="0 0 360 100" preserveAspectRatio="none">
+            <path
+              d="M0 66 C24 68 35 28 58 31 S92 74 117 62 142 21 171 35 199 76 230 58 255 22 285 42 320 74 360 39"
+            ></path>
+          </svg>
+        </div>
+        <div class="waveform green" aria-hidden="true">
+          <svg viewBox="0 0 360 100" preserveAspectRatio="none">
+            <path
+              d="M0 48 C16 44 29 55 44 51 S74 38 92 45 119 64 139 57 168 36 191 46 219 61 242 49 276 36 298 44 331 62 360 52"
+            ></path>
+          </svg>
+        </div>
+        <div class="readouts">
+          <div class="row">
+            <span class="label">Sequence Pulse:</span
+            ><span class="value">127.3 Hz</span>
+          </div>
+          <div class="row">
+            <span class="label">Bond Amplitude:</span
+            ><span class="value">0.56</span>
+          </div>
+          <div class="row">
+            <span class="label">Protein Fold:</span
+            ><span class="value">A-17</span>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="panel center-strip"
+        data-3d-object="scan-strip"
+        data-3d-anchor="top-center"
+      >
+        <div class="panel-header">
+          <span>Chromosome Bands</span>
+          <span>CHR-07</span>
+        </div>
+        <div class="scan-strip" aria-hidden="true">
+          <span style="--a: 0.1"></span><span style="--a: 0.24"></span
+          ><span style="--a: 0.08"></span><span style="--a: 0.35"></span>
+          <span style="--a: 0.16"></span><span style="--a: 0.42"></span
+          ><span style="--a: 0.12"></span><span style="--a: 0.28"></span>
+          <span style="--a: 0.5"></span><span style="--a: 0.18"></span
+          ><span style="--a: 0.36"></span><span style="--a: 0.09"></span>
+          <span style="--a: 0.22"></span><span style="--a: 0.47"></span
+          ><span style="--a: 0.15"></span><span style="--a: 0.32"></span>
+          <span style="--a: 0.12"></span><span style="--a: 0.4"></span>
+        </div>
+      </section>
+
+      <section
+        class="panel controls"
+        data-3d-object="control-panel"
+        data-3d-anchor="left"
+      >
+        <div class="panel-header">
+          <span>Analysis Controls</span>
+          <span>⋮⋮</span>
+        </div>
+        <div class="control-group">
+          <div class="control-row">
+            <span>Helix Rotation</span
+            ><span class="control-value rotation" aria-label="1.0"></span>
+          </div>
+          <div class="slider" style="--fill: 24%"></div>
+        </div>
+        <div class="control-group">
+          <div class="control-row">
+            <span>Genome Depth</span
+            ><span class="control-value depth" aria-label="64"></span>
+          </div>
+          <div class="slider" style="--fill: 64%"></div>
+        </div>
+        <div class="control-group">
+          <div class="control-row">
+            <span>Bond Contrast</span
+            ><span class="control-value contrast" aria-label="1.4"></span>
+          </div>
+          <div class="slider" style="--fill: 48%"></div>
+        </div>
+        <div class="control-group">
+          <div class="control-row">
+            <span>Mutation Filter</span
+            ><span class="control-value filter" aria-label="0.12"></span>
+          </div>
+          <div class="slider" style="--fill: 18%"></div>
+        </div>
+        <div class="buttons">
+          <button class="btn" type="button">Reset</button>
+          <button class="btn" type="button">Sequence</button>
+        </div>
+      </section>
+
+      <section
+        class="panel bio-rail"
+        data-3d-object="bio-matrix"
+        data-3d-anchor="right"
+      >
+        <div class="panel-header">
+          <span>Mutation Matrix</span>
+          <span>Delta</span>
+        </div>
+        <div class="matrix" aria-hidden="true">
+          <span style="--a: 0.05"></span><span style="--a: 0.32"></span
+          ><span style="--a: 0.08"></span><span style="--a: 0.12"></span
+          ><span style="--a: 0.48"></span><span style="--a: 0.18"></span
+          ><span style="--a: 0.06"></span><span style="--a: 0.28"></span>
+          <span style="--a: 0.22"></span><span style="--a: 0.07"></span
+          ><span style="--a: 0.16"></span><span style="--a: 0.55"></span
+          ><span style="--a: 0.1"></span><span style="--a: 0.35"></span
+          ><span style="--a: 0.2"></span><span style="--a: 0.09"></span>
+          <span style="--a: 0.06"></span><span style="--a: 0.4"></span
+          ><span style="--a: 0.12"></span><span style="--a: 0.2"></span
+          ><span style="--a: 0.08"></span><span style="--a: 0.6"></span
+          ><span style="--a: 0.14"></span><span style="--a: 0.26"></span>
+          <span style="--a: 0.34"></span><span style="--a: 0.1"></span
+          ><span style="--a: 0.44"></span><span style="--a: 0.07"></span
+          ><span style="--a: 0.18"></span><span style="--a: 0.28"></span
+          ><span style="--a: 0.05"></span><span style="--a: 0.5"></span>
+        </div>
+        <div class="thin-bars" aria-hidden="true">
+          <div class="thin-bar">
+            <span style="--w: 72%; --c: #b2cbe6"></span>
+          </div>
+          <div class="thin-bar">
+            <span style="--w: 43%; --c: #e6a15d"></span>
+          </div>
+          <div class="thin-bar">
+            <span style="--w: 61%; --c: #94f0b3"></span>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="panel terminal"
+        data-3d-object="terminal"
+        data-3d-anchor="bottom-right"
+      >
+        <div class="panel-header">
+          <span>Sequence Console</span>
+          <span>Synced</span>
+        </div>
+        <div class="terminal-lines">
+          <div class="terminal-feed">
+            <div
+              class="code-line ok"
+              style="--chars: 48ch; --steps: 48; --type-delay: 0s"
+            >
+              <span class="code-text"
+                >BIOCORE::BOOT dna-991-c / channel synced</span
+              >
+            </div>
+            <div
+              class="code-line command"
+              style="--chars: 58ch; --steps: 58; --type-delay: 0.45s"
+            >
+              <span class="code-text"
+                >sequence.align("chromosome-7", confidence: 0.982);</span
+              >
+            </div>
+            <div
+              class="code-line command"
+              style="--chars: 61ch; --steps: 61; --type-delay: 0.9s"
+            >
+              <span class="code-text"
+                >helix.mapBasePairs(mode: "molecular", filter:
+                "low-noise");</span
+              >
+            </div>
+            <div
+              class="code-line error"
+              style="--chars: 54ch; --steps: 54; --type-delay: 1.35s"
+            >
+              <span class="code-text"
+                >ERR_BOND_MISMATCH loci[7:4412] :: retry probe</span
+              >
+            </div>
+            <div
+              class="code-line command"
+              style="--chars: 57ch; --steps: 57; --type-delay: 1.8s"
+            >
+              <span class="code-text"
+                >probe.recalibrate(axis: "guanine", gain: 0.72);</span
+              >
+            </div>
+            <div
+              class="code-line ok"
+              style="--chars: 45ch; --steps: 45; --type-delay: 3.1s"
+            >
+              <span class="code-text"
+                >OK_PAIR_LOCK restored / drift -0.0003</span
+              >
+            </div>
+            <div
+              class="code-line command"
+              style="--chars: 59ch; --steps: 59; --type-delay: 4.6s"
+            >
+              <span class="code-text"
+                >protein.foldScan(region: "cortical-neuron", depth: 64);</span
+              >
+            </div>
+            <div
+              class="code-line error"
+              style="--chars: 52ch; --steps: 52; --type-delay: 6.1s"
+            >
+              <span class="code-text"
+                >WARN_PHASE_DRIFT +0.0042 :: compensating</span
+              >
+            </div>
+            <div
+              class="code-line command"
+              style="--chars: 54ch; --steps: 54; --type-delay: 7.6s"
+            >
+              <span class="code-text"
+                >matrix.normalize(sample: "P-075", pass: 03);</span
+              >
+            </div>
+            <div
+              class="code-line ok"
+              style="--chars: 47ch; --steps: 47; --type-delay: 9.1s"
+            >
+              <span class="code-text"
+                >OK_SEQUENCE_STABLE mutation filter 0.14</span
+              >
+            </div>
+            <div
+              class="code-line command"
+              style="--chars: 56ch; --steps: 56; --type-delay: 10.6s"
+            >
+              <span class="code-text"
+                >stream.commit(packet: "adenine-thymine");</span
+              >
+            </div>
+            <div
+              class="code-line prompt"
+              style="--chars: 39ch; --steps: 39; --type-delay: 12.1s"
+            >
+              <span class="code-text">molecule.stream.awaiting_marker()</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="panel spectrum"
+        data-3d-object="spectrum-panel"
+        data-3d-anchor="bottom-left"
+      >
+        <div class="panel-header">
+          <span>Genome Radar</span>
+          <span>Live</span>
+        </div>
+        <div
+          class="spectrum-content hud-grid telemetry-grid"
+          aria-hidden="true"
+          data-3d-object="genome-radar"
+        >
+          <div class="radar">
+            <span class="radar-dot rd1"></span>
+            <span class="radar-dot hot rd2"></span>
+            <span class="radar-dot rd3"></span>
+          </div>
+          <div class="hud-grid">
+            <div class="hud-bars">
+              <span style="--h: 28%"></span><span style="--h: 62%"></span
+              ><span style="--h: 46%"></span><span style="--h: 83%"></span>
+              <span style="--h: 35%"></span><span style="--h: 74%"></span
+              ><span style="--h: 52%"></span><span style="--h: 91%"></span>
+              <span style="--h: 42%"></span><span style="--h: 68%"></span
+              ><span style="--h: 33%"></span><span style="--h: 58%"></span>
+            </div>
+            <div class="telemetry-lines">
+              <div class="row">
+                <span class="label">Probe Radius:</span
+                ><span class="value">0.72</span>
+              </div>
+              <div class="row">
+                <span class="label">Loci Hits:</span
+                ><span class="value">148</span>
+              </div>
+              <div class="row">
+                <span class="label">Signal Noise:</span
+                ><span class="value">-42db</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sample-controls">
+          <div class="tracks">
+            <span class="tracks-label">Markers:</span>
+            <button class="btn" type="button">Adenine</button>
+            <button class="btn" type="button">Thymine</button>
+            <button class="btn" type="button">Guanine</button>
+            <button class="btn" type="button">Cytosine</button>
+          </div>
+          <button class="btn" type="button">Load Sample Matrix</button>
+          <div class="file-label">Sample DNA-991-C / Patient P-075</div>
+          <div class="sample-row">
+            <span>Probe Sensitivity</span><span>5.0</span>
+          </div>
+          <div class="slider" style="--fill: 58%"></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
