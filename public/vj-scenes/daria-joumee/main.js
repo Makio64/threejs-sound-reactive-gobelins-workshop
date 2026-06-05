@@ -620,7 +620,7 @@ console.log(
 
 		const isKickHard = a.kickHard > 0.5
 
-		console.log(this.startParticles, "SSSSSSSSSSSSS")
+		// console.log(this.startParticles, "SSSSSSSSSSSSS")
 
 		if (isKickHard && !this.lastKickHard && this.startParticles) {
 
