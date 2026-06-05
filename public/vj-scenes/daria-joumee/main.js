@@ -76,11 +76,12 @@ class VitrageScene {
 		this.lastTime = 0
 		this.waitingForKickMove = false
 		this.kickMoveStarted = false
+		this.startParticles = false
 	}
 
 
 	async load() {
-		const [vertexGlass, fragmentGlass, vertexRays, fragmentRays, vertexFloor, fragmentFloor, vertexParticles, fragmentParticles] = await Promise.all([
+		const [vertexGlass, fragmentGlass, vertexRays, fragmentRays, vertexParticles, fragmentParticles] = await Promise.all([
 			fetch('./shaders/glass/vertex.glsl'),
 			fetch('./shaders/glass/fragment.glsl'),
 			fetch('./shaders/rays/vertex.glsl'),
@@ -93,8 +94,6 @@ class VitrageScene {
 		this.fragmentGlass = await fragmentGlass.text()
 		this.vertexRays = await vertexRays.text()
 		this.fragmentRays = await fragmentRays.text()
-		this.vertexFloor = await vertexFloor.text()
-		this.fragmentFloor = await fragmentFloor.text()
 		this.vertexParticles = await vertexParticles.text()
 		this.fragmentParticles = await fragmentParticles.text()
 
@@ -621,7 +620,9 @@ console.log(
 
 		const isKickHard = a.kickHard > 0.5
 
-		if (isKickHard && !this.lastKickHard && time > 10.5) {
+		console.log(this.startParticles, "SSSSSSSSSSSSS")
+
+		if (isKickHard && !this.lastKickHard && this.startParticles) {
 
 			this.activeBursts.push(
 				createParticleBurst({
@@ -864,6 +865,16 @@ console.log(
 			},
 			'+=1'
 		)
+
+		tl.to(
+			this,
+			{
+				startParticles: true, 
+			},
+			'<'
+		)
+
+
 
 
 		//-------------------------------
