@@ -85,8 +85,6 @@ class VitrageScene {
 			fetch('./shaders/glass/fragment.glsl'),
 			fetch('./shaders/rays/vertex.glsl'),
 			fetch('./shaders/rays/fragment.glsl'),
-			fetch('./shaders/floor/vertex.glsl'),
-			fetch('./shaders/floor/fragment.glsl'),
 			fetch('./shaders/particles/vertex.glsl'),
 			fetch('./shaders/particles/fragment.glsl'),
 		])
