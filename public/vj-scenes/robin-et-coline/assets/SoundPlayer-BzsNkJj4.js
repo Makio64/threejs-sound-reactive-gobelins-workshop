@@ -1,4 +1,4 @@
-import{t as e}from"./index-DGShuMyq.js";var t=`
+import{t as e}from"./index-4PkvW3YB.js";var t=`
 	<div class="vj-track-top">
 		<span class="vj-track-name" title="Click to skip">♪ ...</span>
 		<span class="vj-track-time">0:00 / 0:00</span>
