@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <!--
+  COPY THIS FOLDER → public/vj-scenes/<your-name>/ and edit the script below.
+  Any tech works; this example uses three.js (WebGL) from a CDN.
+
+  Implement the lifecycle (all optional): load → warmup → play / stop.
+  Read the audio from `audio`: volume · volumeSmooth · kick · volumeByFrequency.
+
+  Independent: open this page on its own and it runs standalone (plays the same
+  audio tracks and keyboard shortcuts). Embedded in the VJ host, the same code
+  receives the master's broadcast instead- auto-detected, nothing to change.
+-->
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js"
+        }
+      }
+    </script>
+    <script type="module" crossorigin src="./assets/index-CuDgmP-r.js"></script>
+  </head>
+  <body>
+    <canvas class="webgl"></canvas>
+    <div id="start">CLICK TO START</div>
+  </body>
+</html>
