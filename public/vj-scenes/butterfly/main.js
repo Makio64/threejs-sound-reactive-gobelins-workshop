@@ -89,26 +89,21 @@ const BACKGROUND_COLORS = [ '#06060a', '#06060a', '#061a0a', '#160824' ]   // no
 const BUTTERFLY_SHARED_SCALE = 0.56
 
 const LOCAL_BUTTERFLY_POOL = [
-	'./images butterfly /1-214-768x607.jpg',
-	'./images butterfly /1-216.jpg',
-	'./images butterfly /1459932321189150742.jpg',
-	'./images butterfly /1750233373-4253-large.webp',
-	'./images butterfly /347163849140672.webp',
-	'./images butterfly /909023506058977588.jpeg',
-	'./images butterfly /A.jpeg',
-	'./images butterfly /dancing in the street.jpeg',
-	'./images butterfly /Durango, Colorado.jpeg',
-	'./images butterfly /image 79.png',
-	'./images butterfly /images.jpeg',
-	'./images butterfly /images (1).jpeg',
-	'./images butterfly /images (2).jpeg',
-	'./images butterfly /Inde.jpeg',
-	'./images butterfly /Pollution.jpeg',
-	'./images butterfly /quiet.jpeg',
-	'./images butterfly /shannon lynch.jpeg',
-	'./images butterfly /steve mccurry.jpeg',
-	'./images butterfly /Tibet.jpeg',
-	'./images butterfly /Valentina Tereshkova.jpeg',
+	...Array.from( { length: 100 }, ( _, i ) => `./images butterfly /_ (${i + 1}).jpeg` ),
+	'./images butterfly /_.jpeg',
+	'./images butterfly /_(.jpeg',
+	'./images butterfly /_92476390_hi036431778.jpg',
+	'./images butterfly /_ - 2026-06-03T235650.718.jpeg',
+	'./images butterfly /_ - 2026-06-03T235709.579.jpeg',
+	'./images butterfly /_ - 2026-06-03T235732.743.jpeg',
+	'./images butterfly /_ - 2026-06-03T235751.613.jpeg',
+	'./images butterfly /_ - 2026-06-03T235825.287.jpeg',
+	'./images butterfly /_ - 2026-06-03T235837.408.jpeg',
+	'./images butterfly /_ - 2026-06-03T235851.327.jpeg',
+	'./images butterfly /_ - 2026-06-03T235924.356.jpeg',
+	'./images butterfly /_ - 2026-06-03T235937.354.jpeg',
+	'./images butterfly /_ - 2026-06-03T235948.671.jpeg',
+	'./images butterfly /_ - 2026-06-04T000002.529.jpeg',
 ]
 
 // Scripted track — stages advance when kick count reaches kicksToNext
@@ -282,6 +277,7 @@ class ButterflyBlobsScene {
 		const { video, material } = this._three
 		this._three.mesh.material = material   // sort du mode wriggle si actif
 		if ( this._three.overlayMesh ) this._three.overlayMesh.visible = false
+		if ( this._three.overlayRenderer ) this._three.overlayRenderer.domElement.style.display = 'none'
 
 		if ( this._three._onVideoCanPlay ) {
 			video.removeEventListener( 'loadeddata', this._three._onVideoCanPlay )
@@ -335,6 +331,7 @@ class ButterflyBlobsScene {
 		const { video, material, mesh } = this._three
 		mesh.material = material   // sort du mode wriggle si actif
 		if ( this._three.overlayMesh ) this._three.overlayMesh.visible = false
+		if ( this._three.overlayRenderer ) this._three.overlayRenderer.domElement.style.display = 'none'
 		if ( this._three._onVideoCanPlay ) {
 			video.removeEventListener( 'loadeddata', this._three._onVideoCanPlay )
 			this._three._onVideoCanPlay = null
@@ -379,6 +376,7 @@ class ButterflyBlobsScene {
 		three.scene.background = new THREE.Color( 0xf4f4f0 )
 		three.mesh.material = three.wriggleMaterial
 		if ( three.overlayMesh ) three.overlayMesh.visible = false
+		if ( three.overlayRenderer ) three.overlayRenderer.domElement.style.display = 'none'
 	}
 
 	_activateTornadoWriggleOverlay() {
@@ -391,6 +389,7 @@ class ButterflyBlobsScene {
 		const safeScale = BUTTERFLY_SHARED_SCALE * 0.82
 		three.overlayMesh.scale.set( fitX * safeScale, fitY * safeScale, 1 )
 		three.overlayMesh.visible = true
+		if ( three.overlayRenderer ) three.overlayRenderer.domElement.style.display = 'block'
 	}
 
 	_advanceStage() {
@@ -402,6 +401,7 @@ class ButterflyBlobsScene {
 		this._tornadoWordIdx = 0
 		this._chaosWall.active = []
 		if ( this._three?.overlayMesh ) this._three.overlayMesh.visible = false
+		if ( this._three?.overlayRenderer ) this._three.overlayRenderer.domElement.style.display = 'none'
 		this._chaosWall.prevKick = 0
 		this._chaosWall.lastKickEdge = -999
 		this._chaosWall.nextRevealAt = this.t
@@ -505,8 +505,17 @@ class ButterflyBlobsScene {
 		renderer.domElement.style.cssText = 'position:fixed;inset:0;z-index:0;display:block;'
 		document.body.appendChild( renderer.domElement )
 
+		const overlayRenderer = new THREE.WebGLRenderer( { antialias: false, alpha: true } )
+		overlayRenderer.setPixelRatio( 1 )
+		overlayRenderer.setSize( innerWidth, innerHeight )
+		overlayRenderer.setClearColor( 0x000000, 0 )
+		overlayRenderer.domElement.style.cssText = 'position:fixed;inset:0;z-index:1;display:none;pointer-events:none;mix-blend-mode:difference;'
+		document.body.appendChild( overlayRenderer.domElement )
+
 		const scene    = new THREE.Scene()
 		const camera   = new THREE.OrthographicCamera( -1, 1, 1, -1, -4, 4 )
+		const overlayScene = new THREE.Scene()
+		const overlayCamera = new THREE.OrthographicCamera( -1, 1, 1, -1, -4, 4 )
 		const geo      = new THREE.PlaneGeometry( 2, 2, 120, 80 )
 		const material = new THREE.MeshBasicMaterial( { color: 0x06060a } )
 		const mesh     = new THREE.Mesh( geo, material )
@@ -528,8 +537,11 @@ class ButterflyBlobsScene {
 
 		this._three = {
 			renderer,
+			overlayRenderer,
 			scene,
 			camera,
+			overlayScene,
+			overlayCamera,
 			mesh,
 			material,
 			imageTexture: null,
@@ -565,7 +577,7 @@ class ButterflyBlobsScene {
 		const overlayMesh = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2, 120, 80 ), wriggleMat )
 		overlayMesh.visible = false
 		overlayMesh.renderOrder = 2
-		scene.add( overlayMesh )
+		overlayScene.add( overlayMesh )
 		this._three.overlayMesh = overlayMesh
 
 		this._applyBgColor()
@@ -573,7 +585,7 @@ class ButterflyBlobsScene {
 
 		// ── Canvas 2-D pour le rendu metaball (par-dessus le bg Three.js) ─────
 		this.wrap = document.createElement( 'div' )
-		this.wrap.style.cssText = 'position:fixed;inset:0;z-index:1;overflow:visible;'
+		this.wrap.style.cssText = 'position:fixed;inset:0;z-index:2;overflow:visible;'
 		document.body.appendChild( this.wrap )
 
 		this.canvas = document.createElement( 'canvas' )
@@ -615,6 +627,7 @@ class ButterflyBlobsScene {
 		this.canvas.style.cssText = `display:block;position:absolute;left:${-bleed}px;top:${-bleed}px;width:${innerWidth + bleed * 2}px;height:${innerHeight + bleed * 2}px;`
 		if ( this._three ) {
 			this._three.renderer.setSize( innerWidth, innerHeight )
+			this._three.overlayRenderer?.setSize( innerWidth, innerHeight )
 			this._three.composer?.setSize( innerWidth, innerHeight )
 			this._three.bloomPass?.setSize( innerWidth, innerHeight )
 		}
@@ -685,6 +698,13 @@ class ButterflyBlobsScene {
 		}
 
 		t.composer?.render()
+		if ( t.overlayRenderer ) {
+			if ( t.overlayMesh?.visible ) {
+				t.overlayRenderer.render( t.overlayScene, t.overlayCamera )
+			} else {
+				t.overlayRenderer.clear()
+			}
+		}
 	}
 
 	_reSample() {
@@ -1175,6 +1195,7 @@ class ButterflyBlobsScene {
 				this._drawSkyText()
 			} else if ( bgType === 'tornado' && this._tornadoWordIdx > 0 ) {
 				if ( this._three?.overlayMesh ) this._three.overlayMesh.visible = false
+				if ( this._three?.overlayRenderer ) this._three.overlayRenderer.domElement.style.display = 'none'
 				this._drawTornadoText()
 			} else if ( bgType === 'tornado' ) {
 				ctx.clearRect( 0, 0, canvas.width, canvas.height )
