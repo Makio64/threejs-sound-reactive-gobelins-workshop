@@ -1,4 +1,4 @@
-import{t as e}from"./index-Dk_uo1Xr.js";var t=class{constructor(e,{width:t=180,bins:n=8}={}){this.analyzer=e,this.visible=!0,this.bins=n,this.root=document.createElement(`div`),this.root.className=`vj-analyzer-debug`,this.root.style.cssText=`
+import{t as e}from"./index--JzJt8rJ.js";var t=class{constructor(e,{width:t=180,bins:n=8}={}){this.analyzer=e,this.visible=!0,this.bins=n,this.root=document.createElement(`div`),this.root.className=`vj-analyzer-debug`,this.root.style.cssText=`
 			position:fixed;left:16px;top:16px;z-index:10001;
 			width:${t}px;padding:10px 12px;
 			background:rgba(6,6,23,0.88);border:1px solid rgba(184,184,255,0.25);

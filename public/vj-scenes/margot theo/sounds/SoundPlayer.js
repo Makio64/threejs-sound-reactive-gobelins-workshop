@@ -1,6 +1,5 @@
 import { fetchTracksManifest } from '../assetBase.js'
 import { trackIdFromUrl } from './TrackTuningConfig.js'
-import PlayerControl from './PlayerControl.js'
 import { captureChromeTabAudio } from './TabAudioCapture.js'
 
 export default class SoundPlayer {
@@ -38,24 +37,6 @@ export default class SoundPlayer {
 		} catch ( e ) {
 			console.warn( '[player] playlist MP3 indisponible — ajoute des .mp3 dans public/tracks/', e )
 		}
-		this.control = new PlayerControl( {
-			fillBackground: 'linear-gradient(90deg, #8b2fc9, #ff2d6f)',
-			fillShadow: '0 0 8px rgba(255, 45, 111, 0.35)',
-			nameHoverColor: '#ff2d6f',
-			idleOpacity: 0.92,
-			getAudioEl: () => this.audioEl,
-			getSource: () => this.source,
-			getTrackName: () => this.trackName,
-			onSkip: () => this.nextTrack(),
-			onSeek: ( seconds ) => {
-				this.audioEl.currentTime = seconds
-				localStorage.setItem( 'vj-last-track-time', this.audioEl.currentTime )
-			},
-			onTogglePause: () => this.togglePause(),
-			getIsPaused: () => this.source === 'mp3' && this.audioEl.paused,
-			onVolumeChange: ( value ) => this.setVolume( value ),
-			getVolume: () => this.audioEl.volume,
-		} )
 	}
 
 	setVolume = ( value ) => {
