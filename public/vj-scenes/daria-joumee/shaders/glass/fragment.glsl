@@ -4,6 +4,7 @@ uniform sampler2D uMask;
 uniform float uTime;
 uniform float uVolume;
 uniform float uFlash;
+uniform float uOpacity;
 
 uniform float uBaseBrightness;
 uniform float uVolumeBrightness;
@@ -78,5 +79,14 @@ void main() {
 
   finalColor *= uIntroPower;
 
-  gl_FragColor = vec4(finalColor, glass.a);
+  
+// float newAlpha = mix(
+//   glass.a * 0.2,
+//   glass.a,
+//   uOpacity
+// );
+float mappedOpacity = 0.9 + uOpacity * 0.1;
+ 
+
+gl_FragColor = vec4(finalColor, glass.a * mappedOpacity);
 }

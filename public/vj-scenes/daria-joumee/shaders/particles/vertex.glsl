@@ -10,27 +10,24 @@ attribute vec3 aColor;
 varying float vLife;
 varying float vAlpha;
 varying vec3 vColor;
+varying float vRandom;
 
 void main() {
   float t = clamp(uAge / uLife, 0.0, 1.0);
 
   vLife = t;
   vColor = aColor;
+  vRandom = aRandom;
 
-  // fast push at beginning, then speed becomes much lower
   float fastDistance = (1.0 - exp(-uAge * 7.0)) * 0.9 * uKick;
-
-  // slow floating after initial push
   float slowDistance = max(uAge - 0.18, 0.0) * 0.35;
 
   vec3 dir = normalize(aVelocity);
-
   vec3 pos = position;
 
-  pos += dir * uKick * 0.5  * fastDistance;
+  pos += dir * uKick * 0.5 * fastDistance;
   pos += dir * uKick * 0.5 * slowDistance;
 
-  // curly random trajectory after the first impact
   float curlAmount = smoothstep(0.001, 0.45, t);
 
   vec3 curl = vec3(
@@ -44,7 +41,7 @@ void main() {
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
 
   float startGlow = exp(-uAge * 5.0);
-  float size = aSize * 180.0 * (1.0 + startGlow * 2.5);
+  float size = aSize * 180.0 * (1.0 + startGlow * 2.2);
 
   gl_PointSize = size;
   gl_PointSize *= 1.0 / -mvPosition.z;

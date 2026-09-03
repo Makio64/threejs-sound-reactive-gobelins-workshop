@@ -142,9 +142,13 @@ export function createGlassMaterial(
   return new THREE.ShaderMaterial({
     transparent: true,
     side: THREE.DoubleSide,
+     depthWrite: false,
 
     uniforms: {
       uTexture: { value: texture },
+      uOpacity: {
+        value: settings.opacity ?? 1,
+      },
 
       uMask: { value: maskTexture },
 
