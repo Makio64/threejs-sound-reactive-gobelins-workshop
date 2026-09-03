@@ -1,4 +1,4 @@
-import{t as l}from"./index-D9VYtKxy.js";const p=`
+import{t as l}from"./index-DryIBR11.js";const p=`
 	<div class="vj-track-top">
 		<span class="vj-track-name" title="Click to skip">♪ ...</span>
 		<span class="vj-track-time">0:00 / 0:00</span>
