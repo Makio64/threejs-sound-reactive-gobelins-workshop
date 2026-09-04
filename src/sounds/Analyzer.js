@@ -111,6 +111,21 @@ export default class Analyzer {
 	// -- LIVE: own the audio graph and analyse whatever source is connected -------
 	gesture = () => this.start()   // unlock the AudioContext on the first user gesture
 
+	// Some student scenes drive analysis with their own rAF loop (autoTick: false)
+	// but still want the shared standalone playlist after the first gesture.
+	enableMusic = async () => {
+		if ( this.mode !== 'live' ) return null
+		if ( this.player ) return this.player
+		try {
+			const { default: SoundPlayer } = await import( './SoundPlayer.js' )
+			this.player = new SoundPlayer( this )
+			return this.player
+		} catch ( err ) {
+			console.error( '[analyzer] failed to load SoundPlayer', err )
+			return null
+		}
+	}
+
 	// 'd' toggles the debug overlay; the player owns the music keys (m / . / ,)
 	onKey = ( e ) => {
 		if ( document.activeElement && ( document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' ) ) return
@@ -173,14 +188,7 @@ export default class Analyzer {
 
 		// standalone convenience: hand off "choose & play the music" to the player
 		// (lazy import, exactly like toggleDebug() loads AnalyzerDebug)
-		if ( this.autoTick && ! this.player ) {
-			try {
-				const { default: SoundPlayer } = await import( './SoundPlayer.js' )
-				this.player = new SoundPlayer( this )
-			} catch ( err ) {
-				console.error( '[analyzer] failed to load SoundPlayer', err )
-			}
-		}
+		if ( this.autoTick ) await this.enableMusic()
 		this.fire( 'play' )
 	}
 
