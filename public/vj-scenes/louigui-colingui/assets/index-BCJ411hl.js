@@ -421,4 +421,7 @@ var<${n}> ${e} : ${a};`}},VF=class{constructor(e){this.backend=e}getCurrentDepth
       </div>
     </div>
   </main>
-`,new AL(document.getElementById(`experience-canvas`),document.getElementById(`flat-canvas`));export{TL as t};
+`;
+const guardedNextCameraPosition=qI.prototype.nextCameraPosition;
+qI.prototype.nextCameraPosition=function(){if(!this.character||!this.character2)return;return guardedNextCameraPosition.call(this)};
+new AL(document.getElementById(`experience-canvas`),document.getElementById(`flat-canvas`));export{TL as t};
